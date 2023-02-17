@@ -1,53 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for, abort
-from forms import SignupForm, PostForm, LoginForm
-from flask_login import LoginManager, current_user, login_user, logout_user, login_required
+from flask import render_template, redirect, url_for, request
+from flask_login import current_user, login_user, logout_user
 from werkzeug.urls import url_parse
-from flask_sqlalchemy import SQLAlchemy
-
-app = Flask(__name__)
-app.config['SECRET_KEY'] = '7110c8ae51a4b5af97be6534caef90e4bb9bdcb3380af008f90b23a5d1616bf319bc298105da20fe'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///miniblog.sqlite'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+from app import login_manager
+from . import auth_bp
+from .forms import SignupForm, LoginForm
+from .models import User
 
 
-login_manager = LoginManager(app)
-login_manager.login_view = "login"
-db = SQLAlchemy(app)
-
-from models import User, Post
-
-
-@app.route("/")
-def index():
-    posts = Post.get_all()
-    return render_template("index.html", posts=posts)
-
-
-@app.route("/p/<string:slug>/")
-def show_post(slug):
-    post = Post.get_by_slug(slug)
-    if post is None:
-        abort(404)
-    return render_template("post_view.html", post=post)
-
-
-@app.route("/admin/post/", methods=['GET', 'POST'], defaults={'post_id': None})
-@app.route("/admin/post/<int:post_id>/", methods=['GET', 'POST'])
-@login_required
-def post_form(post_id):
-    form = PostForm()
-    if form.validate_on_submit():
-        title = form.title.data
-        content = form.content.data
-
-        post = Post(user_id=current_user.id, title=title, content=content)
-        post.save()
-
-        return redirect(url_for('index'))
-    return render_template("admin/post_form.html", form=form)
-
-
-@app.route("/signup/", methods=["GET", "POST"])
+@auth_bp.route("/signup/", methods=["GET", "POST"])
 def show_signup_form():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
@@ -60,7 +20,7 @@ def show_signup_form():
         # Comprobamos que no hay ya un usuario con ese email
         user = User.get_by_email(email)
         if user is not None:
-            error = f'El email {email} ya está siendo utilizado por otro usuario'
+            error = f'El email {email} ya estÃ¡ siendo utilizado por otro usuario'
         else:
             # Creamos el usuario y lo guardamos
             user = User(name=name, email=email)
@@ -80,7 +40,7 @@ def load_user(user_id):
     return User.get_by_id(int(user_id))
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
@@ -96,7 +56,7 @@ def login():
     return render_template('login_form.html', form=form)
 
 
-@app.route('/logout')
+@auth_bp.route('/logout')
 def logout():
     logout_user()
     return redirect(url_for('index'))
