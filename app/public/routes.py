@@ -1,4 +1,13 @@
+"""
+
+AUTOR: Juanjo
+
+FECHA DE CREACIÓN: 24/05/2019
+
+"""
+
 from flask import abort, render_template
+
 from app.models import Post
 from . import public_bp
 

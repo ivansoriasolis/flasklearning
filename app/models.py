@@ -1,13 +1,13 @@
 from flask import url_for
 from slugify import slugify
 from sqlalchemy.exc import IntegrityError
+
 from app import db
 
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey(
-        'blog_user.id', ondelete='CASCADE'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('blog_user.id', ondelete='CASCADE'), nullable=False)
     title = db.Column(db.String(256), nullable=False)
     title_slug = db.Column(db.String(256), unique=True, nullable=False)
     content = db.Column(db.Text)
@@ -20,6 +20,7 @@ class Post(db.Model):
             db.session.add(self)
         if not self.title_slug:
             self.title_slug = slugify(self.title)
+
         saved = False
         count = 0
         while not saved:
@@ -28,10 +29,10 @@ class Post(db.Model):
                 saved = True
             except IntegrityError:
                 count += 1
-                self.title_slug = f'{slugify(self.title)}-{count}'
+                self.title_slug = f'{self.title_slug}-{count}'
 
     def public_url(self):
-        return url_for('show_post', slug=self.title_slug)
+        return url_for('public.show_post', slug=self.title_slug)
 
     @staticmethod
     def get_by_slug(slug):

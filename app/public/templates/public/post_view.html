@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-
 {% extends "base_template.html" %}
+
 {% block title %}{{ post.title }}{% endblock %}
+
 {% block content %}
-<h1>{{ post.title }}</h1>
-{{ post.content }}
+    <h1>{{ post.title }}</h1>
+    {{ post.content }}
 {% endblock %}

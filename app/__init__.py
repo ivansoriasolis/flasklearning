@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
+import os
 login_manager = LoginManager()
 db = SQLAlchemy()
 
@@ -8,8 +9,11 @@ db = SQLAlchemy()
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = '7110c8ae51a4b5af97be6534caef90e4bb9bdcb3380af008f90b23a5d1616bf319bc298105da20fe'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///miniblog.sqlite'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    app.config['SQLALCHEMY_DATABASE_URI'] =\
+        'sqlite:///' + os.path.join(basedir, 'miniblog.sqlite')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False    
+
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
     db.init_app(app)

@@ -14,7 +14,9 @@ def post_form(post_id):
     if form.validate_on_submit():
         title = form.title.data
         content = form.content.data
+
         post = Post(user_id=current_user.id, title=title, content=content)
         post.save()
+
         return redirect(url_for('public.index'))
     return render_template("admin/post_form.html", form=form)
